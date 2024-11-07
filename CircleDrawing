@@ -1,0 +1,120 @@
+##Circle drawing
+# polar circle drawing algo
+
+void MainWindow::draw_circle_polar(int x1, int y1) {
+    int grid_size = ui->grid_size->value();
+    int width = ui->workArea->width();
+    int height = ui->workArea->height();
+    int centerX = width / 2;
+    int centerY = height / 2;
+
+    int r = ui->radius->value() * grid_size;
+
+    int xc = centerX + (x1 * grid_size + grid_size / 2.0);
+    int yc = centerY - (y1 * grid_size + grid_size / 2.0);
+
+    float theta = 0;
+    float deltaTheta = (M_PI) / (float)r;
+    int X1, Y1, d_x, d_y, newX = 0, newY = 0;
+    while (theta <= M_PI / 4) {
+        int X = static_cast<int>(xc + r * cos(theta));
+        int Y = static_cast<int>(yc - r * sin(theta));
+
+        X1 = floor((X - centerX) * 1.0 / grid_size);
+        Y1 = floor((centerY - Y) * 1.0 / grid_size);
+        d_x = centerX + X1 * grid_size + grid_size / 2.0;
+        d_y = centerY - Y1 * grid_size - grid_size / 2.0;
+
+        colorPoint(d_x, d_y, 30, 90, 200, grid_size);
+        Delay;
+        colorPoint(d_x, 2 * yc - d_y, 30, 90, 200, grid_size);
+        Delay;
+        colorPoint(2 * xc - d_x, d_y, 30, 90, 200, grid_size);
+        Delay;
+        colorPoint(2 * xc - d_x, 2 * yc - d_y, 30, 90, 200, grid_size);
+
+        int newX = xc + yc - Y;
+        int newY = yc - xc + X;
+
+        X1 = floor((newX - centerX) * 1.0 / grid_size);
+        Y1 = floor((centerY - newY) * 1.0 / grid_size);
+        d_x = centerX + X1 * grid_size + grid_size / 2.0;
+        d_y = centerY - Y1 * grid_size + grid_size / 2.0;
+        Delay;
+        colorPoint(d_x, d_y, 30, 90, 200, grid_size);
+        Delay;
+        colorPoint(d_x, 2 * yc - d_y, 30, 90, 200, grid_size);
+        Delay;
+        colorPoint(2 * xc - d_x, d_y, 30, 90, 200, grid_size);
+        Delay;
+        colorPoint(2 * xc - d_x, 2 * yc - d_y, 30, 90, 200, grid_size);
+
+        theta += deltaTheta;
+    }
+}
+
+void MainWindow::on_draw_circle_clicked() {
+    while (points.size() > 1) {
+        points.pop_front();
+    }
+    auto c1 = points.front();
+    QElapsedTimer timer;
+    timer.start();
+    draw_circle_polar(c1.first, c1.second);
+    qint64 timeTaken = timer.elapsed();
+    ui->circle_time->setText(QString::number(timeTaken) + "ns");
+}
+
+
+//---------------------------------------------------------------------------------------------------------
+# bresenham circle drawing algo
+
+void MainWindow::draw_circle_bresenham() {
+    int gridsize = ui->grid_size->value();
+    int r = ui->radius->value();
+    auto g = orgPoints.front();
+    orgPoints.pop_front();
+
+    int x0 = g.first / gridsize;
+    int y0 = g.second / gridsize;
+    x0 = x0 * gridsize + gridsize / 2;
+    y0 = y0 * gridsize + gridsize / 2;
+
+    int x = 0;
+    int y = r * gridsize;
+    int p = (3 - 2 * r) * gridsize;
+    while (y > x) {
+        Delay;
+        colorPoint(x0 - x, y0 - y, 90, 200, 200, gridsize);
+        Delay;
+        colorPoint(x0 + x, y0 - y, 90, 200, 200, gridsize);
+        Delay;
+        colorPoint(x0 - x, y0 + y, 90, 200, 200, gridsize);
+        Delay;
+        colorPoint(x0 + x, y0 + y, 90, 200, 200, gridsize);
+        Delay;
+        colorPoint(x0 - y, y0 - x, 90, 200, 200, gridsize);
+        Delay;
+        colorPoint(x0 + y, y0 - x, 90, 200, 200, gridsize);
+        Delay;
+        colorPoint(x0 - y, y0 + x, 90, 200, 200, gridsize);
+        Delay;
+        colorPoint(x0 + y, y0 + x, 90, 200, 200, gridsize);
+
+        x += gridsize;
+        if (p <= 0) {
+            p += 4 * x + 6;
+        } else {
+            p += 4 * (x - y) + 10;
+            y -= gridsize;
+        }
+    }
+}
+
+void MainWindow::on_bresenham_Circle_clicked() {
+    QElapsedTimer timer;
+    timer.start();
+    draw_circle_bresenham();
+    qint64 timeTaken = timer.elapsed();
+    ui->bresenham_time->setText(QString::number(timeTaken) + "ns");
+}
