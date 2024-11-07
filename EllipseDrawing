@@ -1,0 +1,111 @@
+#Ellipse drawing
+void MainWindow::draw_ellipse(int x1, int y1) { //polar
+    int grid_size = ui->grid_size->value();
+    int width = ui->workArea->width();
+    int height = ui->workArea->height();
+    int centerX = width / 2;
+    int centerY = height / 2;
+
+    int a = ui->horizontal_radius->value() * grid_size;
+    int b = ui->vertical_radius->value() * grid_size;
+
+    int xc = centerX + (x1 * grid_size + grid_size / 2.0);
+    int yc = centerY - (y1 * grid_size + grid_size / 2.0);
+
+    float theta = 0;
+    float deltaTheta = (M_PI) / (float)(4 * a);
+    int X1, Y1, d_x, d_y;
+    while (theta <= M_PI / 2) {
+        int X = static_cast<int>(xc + a * cos(theta));
+        int Y = static_cast<int>(yc - b * sin(theta));
+
+        X1 = floor((X - centerX) * 1.0 / grid_size);
+        Y1 = floor((centerY - Y) * 1.0 / grid_size);
+        d_x = centerX + X1 * grid_size + grid_size / 2.0;
+        d_y = centerY - Y1 * grid_size - grid_size / 2.0;
+
+        colorPoint(d_x, d_y, 30, 90, 200, grid_size);
+        Delay;
+        colorPoint(d_x, 2 * yc - d_y, 30, 90, 200, grid_size);
+        Delay;
+        colorPoint(2 * xc - d_x, d_y, 30, 90, 200, grid_size);
+        Delay;
+        colorPoint(2 * xc - d_x, 2 * yc - d_y, 30, 90, 200, grid_size);
+        theta += deltaTheta;
+    }
+}
+
+void MainWindow::on_draw_ellipse_clicked() {   //Polar
+    QElapsedTimer timer;
+    timer.start();
+    auto a = points.front();
+    points.pop_front();
+
+    draw_ellipse(a.first, a.second);
+
+    qint64 timeTaken = timer.elapsed();
+    ui->ellipse_time->setText(QString::number(timeTaken) + "ns");
+}
+
+void MainWindow::on_actionBresenham_triggered() {  //Bresenham
+    int grid_size = ui->grid_size->value();
+
+    auto w = orgPoints.front();
+    int xc = w.first;
+    int yc = w.second;
+    xc = (xc / grid_size) * grid_size + grid_size / 2;
+    yc = (yc / grid_size) * grid_size + grid_size / 2;
+
+    int a = ui->horizontal_radius->value();
+    int b = ui->vertical_radius->value();
+
+    int x = 0;
+    int y = b;
+    int a2 = a * a;
+    int b2 = b * b;
+    int twoa2 = 2 * a2;
+    int twob2 = 2 * b2;
+    int p;
+    int dx = 0;
+    int dy = twoa2 * y;
+
+    p = round(b2 - (a2 * b) + (0.25 * a2));
+    while (dx <= dy) {
+        colorPoint(xc + x * grid_size, yc + y * grid_size, 0, 128, 128, grid_size);
+        colorPoint(xc - x * grid_size, yc + y * grid_size, 0, 128, 128, grid_size);
+        colorPoint(xc + x * grid_size, yc - y * grid_size, 0, 128, 128, grid_size);
+        colorPoint(xc - x * grid_size, yc - y * grid_size, 0, 128, 128, grid_size);
+
+        x++;
+        dx += twob2;
+
+        if (p < 0) {
+            p += b2 + dx;
+        } else {
+            y--;
+            dy -= twoa2;
+            p += b2 + dx - dy;
+        }
+        delay(1);
+    }
+
+    p = round(b2 * (x + 0.5) * (x + 0.5) + a2 * (y - 1) * (y - 1) - a2 * b2);
+    while (y >= 0) {
+        colorPoint(xc + x * grid_size, yc + y * grid_size, 0, 128, 128, grid_size);
+        colorPoint(xc - x * grid_size, yc + y * grid_size, 0, 128, 128, grid_size);
+        colorPoint(xc + x * grid_size, yc - y * grid_size, 0, 128, 128, grid_size);
+        colorPoint(xc - x * grid_size, yc - y * grid_size, 0, 128, 128, grid_size);
+
+        y--;
+        dy -= twoa2;
+
+        if (p > 0) {
+            p += a2 - dy;
+        } else {
+            x++;
+            dx += twob2;
+            p += a2 - dy + dx;
+        }
+        delay(1);
+    }
+}
