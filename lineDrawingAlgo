@@ -1,0 +1,131 @@
+#Line drawing algo
+# dda algo
+void MainWindow::draw_dda_line(float x1,float y1,float x2,float y2)
+{
+    float dx, dy, xinc, yinc, steps;
+    float x_current, y_current;
+
+    dx = x2 - x1;
+    dy = y2 - y1;
+
+    if (abs(dx) > abs(dy)) {
+        steps = abs(dx);
+    } else {
+        steps = abs(dy);
+    }
+
+    xinc = dx / steps;
+    yinc = dy / steps;
+
+    int gridOffset = (ui->grid_size->value() == 0) ? 1 : ui->grid_size->value();
+    int width = ui->workArea->width();
+    int height = ui->workArea->height();
+    int centerX = width / 2;
+    int centerY = height / 2;
+
+    x_current = x1;
+    y_current = y1;
+    qDebug()<<x1<<y1<<centerX<<centerY;
+
+    for (int i = 0; i <= steps; i++) {
+        // snip to the size to grid
+        int draw_x = centerX + round(x_current) * gridOffset;
+        int draw_y = centerY - round(y_current) * gridOffset;
+
+        int grid_center_x = draw_x + gridOffset / 2;   //finding middle of the grid
+        int grid_center_y = draw_y - gridOffset / 2;
+        Delay;
+        colorPoint(grid_center_x, grid_center_y, 0, 255, 0, gridOffset);  //color function(a grid)
+        x_current += xinc;
+        y_current += yinc;
+    }
+}
+
+
+void MainWindow::on_draw_dda_clicked()
+{
+    if(points.size()< 2 ) return;
+    QElapsedTimer timer;
+    auto c1 = points.back();
+    points.pop_back();
+    auto c2 = points.back();
+    points.push_back(c1);
+    timer.start();
+    //--------------------------------------------------------------
+    draw_dda_line(c1.first, c1.second, c2.first, c2.second);
+    qint64 timeTaken = timer.elapsed();
+
+
+    ui->ddaTime->setText(QString::number(timeTaken) + "ns");
+}
+
+# Bresenham's Line drawing algorithm
+void MainWindow::bressenham(int x1, int y1, int x2, int y2,int r , int g ,int b)
+{
+        int grid_size = ui->grid_size->value();
+        int width = ui->workArea->width();
+        int height = ui->workArea->height();
+        int centerX = width / 2;
+        int centerY = height / 2;
+
+        int x = centerX + (x1 * grid_size + grid_size / 2.0);
+        int y = centerY - (y1 * grid_size + grid_size / 2.0);
+        colorPoint(x, y, 0, 128, 128, grid_size);
+
+
+        int dx = abs(x2 - x1);
+        int dy = abs(y2 - y1);
+
+        int sx = (x1 < x2) ? 1 : -1;
+        int sy = (y1 < y2) ? 1 : -1;
+
+        bool is_steep = (dy > dx);
+
+        if (is_steep) {
+            std::swap(dx, dy);
+        }
+
+        int p = 2 * dy - dx;
+
+        for (int i = 0; i <= dx; ++i) {
+            colorPoint(x, y, r, g, b, grid_size);
+
+            if (p >= 0) {
+                if (is_steep) {
+                    x += sx * grid_size;
+                } else {
+                    y -= sy * grid_size;
+                }
+                p -= 2 * dx;
+            }
+
+            if (is_steep) {
+                y -= sy * grid_size;
+            } else {
+                x += sx * grid_size;
+            }
+            p += 2 * dy;
+        }
+}
+
+void MainWindow::on_bresenham_button_clicked()
+{
+    if(points.size()< 2 ) return;
+    auto c1 = points.back();
+    points.pop_back();
+    auto c2 = points.back();
+    points.push_back(c1);
+
+    if(c1.second > c2.second){
+        std::swap(c1.first,c2.first);
+        std::swap(c1.second , c2.second);
+    }
+    qDebug()<<c1.first<<c1.second<<c2.first<<c2.second;
+    QElapsedTimer timer;
+    timer.start();
+    bressenham(c1.first , c1.second , c2.first , c2.second,0,128,128);
+    qint64 timeTaken = timer.elapsed();
+    ui->bresenhamTime->setText(QString::number(timeTaken)+ "ns");
+}
+
+here i am algp printing the time taken by the line drawing algo on the UI
