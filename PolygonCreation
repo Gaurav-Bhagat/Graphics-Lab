@@ -1,0 +1,25 @@
+//creation of polygon using Bresenham line Drawing algo.
+
+void MainWindow::on_draw_polygon_clicked() {
+    auto start = points.front();
+    points.push_back(start);
+
+    for (auto it = points.begin(); it != points.end(); it++) {
+        int x1 = it->first;
+        int y1 = it->second;
+        ++it;
+        int x2;
+        int y2;
+        if (it != points.end()) {
+            x2 = it->first;
+            y2 = it->second;
+        }
+        --it;
+        if (y1 > y2) {
+            std::swap(x1, x2);
+            std::swap(y1, y2);
+        }
+        bressenham(x1, y1, x2, y2, 0, 0, 0);
+    }
+    points.pop_back();
+}
