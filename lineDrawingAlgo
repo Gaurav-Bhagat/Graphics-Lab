@@ -128,4 +128,4 @@ void MainWindow::on_bresenham_button_clicked()
     ui->bresenhamTime->setText(QString::number(timeTaken)+ "ns");
 }
 
-here i am algp printing the time taken by the line drawing algo on the UI
+here i am also printing the time taken by the line drawing algo on the UI
